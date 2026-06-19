@@ -1,0 +1,32 @@
+[
+    {
+        "type": "helmet",
+        "class": "no-helmet",
+        "confidence": 0.7175636291503906,
+        "time": "2026-06-18 05:32:08"
+    },
+    {
+        "type": "helmet",
+        "class": "driver",
+        "confidence": 0.6204410791397095,
+        "time": "2026-06-18 05:32:08"
+    },
+    {
+        "type": "helmet",
+        "class": "driver",
+        "confidence": 0.5021010637283325,
+        "time": "2026-06-18 05:32:08"
+    },
+    {
+        "type": "stopline",
+        "class": "stop-line",
+        "confidence": 0.605299711227417,
+        "time": "2026-06-18 05:32:09"
+    },
+    {
+        "type": "redlight",
+        "class": "bus",
+        "confidence": 0.9233974814414978,
+        "time": "2026-06-18 05:32:10"
+    }
+]

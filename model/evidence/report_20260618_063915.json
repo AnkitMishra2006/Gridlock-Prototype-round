@@ -1,0 +1,117 @@
+{
+    "timestamp": "2026-06-18 06:39:15",
+    "camera_id": "CAM_001",
+    "location": "Delhi, India",
+    "total_score": 48,
+    "overall_severity": "\ud83d\udd34 CRITICAL",
+    "violations": [
+        {
+            "type": "helmet",
+            "class": "driver",
+            "confidence": 0.91,
+            "score": 5,
+            "severity": "\ud83d\udfe1 MEDIUM",
+            "time": "2026-06-18 06:38:56"
+        },
+        {
+            "type": "helmet",
+            "class": "driver",
+            "confidence": 0.9,
+            "score": 5,
+            "severity": "\ud83d\udfe1 MEDIUM",
+            "time": "2026-06-18 06:38:56"
+        },
+        {
+            "type": "helmet",
+            "class": "driver",
+            "confidence": 0.79,
+            "score": 5,
+            "severity": "\ud83d\udfe1 MEDIUM",
+            "time": "2026-06-18 06:38:56"
+        },
+        {
+            "type": "helmet",
+            "class": "driver",
+            "confidence": 0.71,
+            "score": 5,
+            "severity": "\ud83d\udfe1 MEDIUM",
+            "time": "2026-06-18 06:38:56"
+        },
+        {
+            "type": "helmet",
+            "class": "helmet",
+            "confidence": 0.69,
+            "score": 0,
+            "severity": "\ud83d\udfe2 LOW",
+            "time": "2026-06-18 06:38:56"
+        },
+        {
+            "type": "helmet",
+            "class": "driver",
+            "confidence": 0.57,
+            "score": 5,
+            "severity": "\ud83d\udfe1 MEDIUM",
+            "time": "2026-06-18 06:38:56"
+        },
+        {
+            "type": "helmet",
+            "class": "helmet",
+            "confidence": 0.54,
+            "score": 0,
+            "severity": "\ud83d\udfe2 LOW",
+            "time": "2026-06-18 06:38:56"
+        },
+        {
+            "type": "redlight",
+            "class": "red_light",
+            "confidence": 0.83,
+            "score": 9,
+            "severity": "\ud83d\udd34 CRITICAL",
+            "time": "2026-06-18 06:38:57"
+        },
+        {
+            "type": "redlight",
+            "class": "motorcycle",
+            "confidence": 0.64,
+            "score": 5,
+            "severity": "\ud83d\udfe1 MEDIUM",
+            "time": "2026-06-18 06:38:57"
+        },
+        {
+            "type": "vehicle",
+            "class": "motorcycle",
+            "confidence": 0.93,
+            "score": 3,
+            "severity": "\ud83d\udfe2 LOW",
+            "time": "2026-06-18 06:38:57"
+        },
+        {
+            "type": "vehicle",
+            "class": "motorcycle",
+            "confidence": 0.56,
+            "score": 3,
+            "severity": "\ud83d\udfe2 LOW",
+            "time": "2026-06-18 06:38:57"
+        },
+        {
+            "type": "vehicle",
+            "class": "motorcycle",
+            "confidence": 0.53,
+            "score": 3,
+            "severity": "\ud83d\udfe2 LOW",
+            "time": "2026-06-18 06:38:57"
+        },
+        {
+            "type": "wrong_way",
+            "class": "right-side",
+            "confidence": 0.62,
+            "score": 0,
+            "severity": "\ud83d\udfe2 LOW",
+            "time": "2026-06-18 06:38:57"
+        }
+    ],
+    "license_plates": [
+        "BD5314"
+    ],
+    "alert_sent": true
+}

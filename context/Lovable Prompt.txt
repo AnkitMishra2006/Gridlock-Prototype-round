@@ -1,0 +1,213 @@
+Build a modern frontend-only prototype for an AI-powered smart traffic violation and accident response dashboard called “GuardianEye”.
+
+Important:
+Only build the frontend UI. Do not build the backend, database, authentication system, AI model, or real API logic. Use clean mock data everywhere, but structure the frontend as if it will later connect to real APIs. Use reusable components, realistic dashboard layouts, responsive design, and polished UX suitable for a hackathon prototype/demo.
+
+Project Context:
+GuardianEye is a computer-vision-based traffic safety system. Cameras detect traffic violations and accidents in real time. The AI model will detect vehicles, people, number plates, helmets, seatbelts, red-light jumping, wrong-side driving, overspeeding, and accident-like situations. The frontend should show live detections, evidence, alerts, severity, location, and response status.
+
+Main goal:
+Create a high-impact dashboard UI that helps traffic police, emergency teams, and admins monitor violations, accidents, camera feeds, and alerts in real time.
+
+Build these main screens:
+
+1. Main Dashboard / Overview
+Create a landing dashboard with:
+- Total violations today
+- Active accident alerts
+- High-severity alerts
+- Pending police response
+- Pending hospital/ambulance response
+- Number of active cameras
+- Average response time
+- Violation trend chart
+- Top violation types
+- Recent incidents table
+- City safety score / risk score
+- Quick action buttons such as “View Live Feed”, “Open Alert Center”, “View Heatmap”
+
+2. Live Camera Monitoring Page
+Create a page that simulates live traffic camera feeds.
+Each camera card should show:
+- Camera name/location
+- Live status: Active / Offline / Warning
+- Mock traffic image/video placeholder
+- Detection overlays/badges such as “No Helmet”, “Red Light Jump”, “Accident Suspected”
+- Confidence score
+- Timestamp
+- Severity level
+- Button to view full incident details
+
+Add a larger selected camera view with:
+- Detection bounding-box style overlays
+- Side panel showing detected vehicle, violation type, number plate, confidence, and recommended action
+
+3. Violation Management Dashboard
+Create a detailed violation list/table with filters:
+- Violation type
+- Severity
+- Location
+- Camera
+- Status
+- Date/time
+- Number plate
+- Confidence score
+
+Each violation row/card should show:
+- Evidence thumbnail
+- Violation type
+- Vehicle number
+- Location
+- Time
+- Severity score
+- Status: New, Alert Sent, In Review, Resolved
+- Action buttons: View Evidence, Send Alert, Mark Resolved
+
+4. Accident & Emergency Alerts Page
+Create a dedicated emergency response page for accident-like incidents.
+It should show:
+- Accident detected card
+- Location
+- Camera ID
+- Severity: Minor / Moderate / Critical
+- Number of people/vehicles detected
+- Evidence image/video placeholder
+- Time since detection
+- Nearest police station
+- Nearest hospital
+- Ambulance dispatch status
+- Response timeline
+
+Include a visual workflow:
+Accident Detected → Police Alert Sent → Hospital Alert Sent → Ambulance Assigned → Help Dispatched → Resolved
+
+5. Alert Center
+Build an alert management screen where police/admin users can see all alerts.
+Alert types:
+- Traffic violation alert
+- High severity violation alert
+- Accident alert
+- Repeat offender alert
+- Camera offline alert
+
+Each alert should contain:
+- Alert title
+- Severity color/badge
+- Location
+- Timestamp
+- Assigned authority
+- Status
+- Message preview
+- Evidence attachment thumbnail
+- CTA buttons: Acknowledge, Dispatch Team, Escalate, Resolve
+
+Also create a mock alert modal that shows the exact message that would be sent to police/hospital, including:
+- Incident type
+- Location
+- Evidence photo
+- Vehicle number if available
+- Severity score
+- Recommended action
+
+6. Heatmap / City Risk Map Page
+Create a map-style page using a placeholder map UI.
+Show:
+- Violation hotspots
+- Accident-prone zones
+- Camera locations
+- Severity-based markers
+- Filter by violation type
+- Filter by time range
+- Sidebar with top 5 high-risk locations
+
+The map does not need real map integration. A polished mock map layout is enough, but design it as if it can later connect to Mapbox/Google Maps/Leaflet.
+
+7. Incident Detail Page
+Create a detailed page for a single violation/accident.
+Include:
+- Incident ID
+- Type of incident
+- Location
+- Timestamp
+- Camera source
+- Severity score
+- AI confidence
+- Vehicle number plate
+- Evidence image/video section
+- Detected objects list
+- Alert history
+- Response timeline
+- Notes section
+- Status update dropdown
+- Buttons: Send Police Alert, Send Hospital Alert, Download Evidence, Mark as Resolved
+
+8. Repeat Offender / Vehicle Lookup Page
+Create a page where an admin can search vehicle number plates.
+Show:
+- Vehicle number
+- Total violations
+- Violation history
+- Most common violation
+- Last seen location
+- Risk score
+- Timeline of previous incidents
+
+9. Settings / Camera Management Page
+Create a basic admin settings page for:
+- Camera list
+- Camera location
+- Camera status
+- Assigned zone
+- Alert thresholds
+- Severity rules
+- Notification channels
+- Mock integrations: SMS, WhatsApp, Email, Police Dashboard, Hospital Dashboard
+
+Design Requirements:
+- Make the UI premium, modern, futuristic, and suitable for a winning hackathon demo.
+- Use a smart-city / command-center feel.
+- Prefer a dark theme with strong contrast.
+- Use cards, badges, charts, timelines, tables, modals, side panels, and map-like layouts.
+- Use clean typography, good spacing, smooth interactions, and responsive design.
+- Add realistic mock data so the dashboard looks alive.
+- Add empty/loading/error states where useful.
+- Use severity colors clearly:
+  - Low: green
+  - Medium: yellow/orange
+  - High: red
+  - Critical: purple/red
+- Make the UI demo-friendly. It should clearly communicate the product even without backend connection.
+
+Frontend Behavior:
+- Use mock JSON data inside the frontend.
+- Buttons should open modals or update local UI state.
+- “Send Alert” should simulate sending an alert and change the status to “Alert Sent”.
+- “Acknowledge” should update alert status locally.
+- “Mark Resolved” should update incident status locally.
+- Add toast notifications for actions.
+- Use clean component names and a scalable folder structure.
+
+Suggested mock incident types:
+- No Helmet
+- Triple Riding
+- Red Light Jump
+- Wrong-Side Driving
+- Seatbelt Missing
+- Overspeeding
+- Accident Detected
+- Pedestrian Risk
+- Emergency Vehicle Blocked
+
+Suggested Dashboard Metrics:
+- Violations Today
+- Accidents Detected
+- Critical Alerts
+- Police Alerts Sent
+- Hospital Alerts Sent
+- Active Cameras
+- Average AI Confidence
+- Average Response Time
+- Most Dangerous Zone
+- Repeat Offenders
+
+Do not implement real ML, OCR, SMS, WhatsApp, database, or backend APIs. Just create an excellent frontend prototype that can later be connected to FastAPI/Node.js APIs.

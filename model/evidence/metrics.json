@@ -1,0 +1,10 @@
+{
+    "accuracy": 92.31,
+    "precision": 92.31,
+    "recall": 100.0,
+    "f1_score": 96.0,
+    "mAP": 71.67,
+    "true_positives": 12,
+    "false_positives": 1,
+    "false_negatives": 0
+}

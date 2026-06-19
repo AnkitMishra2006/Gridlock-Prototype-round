@@ -1,0 +1,121 @@
+{
+    "timestamp": "2026-06-18 10:30:35",
+    "camera_id": "CAM_001",
+    "location": "Delhi, India",
+    "peak_hour": "\ud83d\udd34 MORNING PEAK (8AM-10AM)",
+    "weather": "\u2600\ufe0f CLEAR",
+    "total_score": 60,
+    "overall_severity": "\ud83d\udd34 CRITICAL",
+    "violations": [
+        {
+            "type": "helmet",
+            "class": "driver",
+            "confidence": 0.91,
+            "score": 5,
+            "severity": "\ud83d\udfe1 MEDIUM",
+            "time": "2026-06-18 10:30:14"
+        },
+        {
+            "type": "helmet",
+            "class": "driver",
+            "confidence": 0.88,
+            "score": 5,
+            "severity": "\ud83d\udfe1 MEDIUM",
+            "time": "2026-06-18 10:30:14"
+        },
+        {
+            "type": "helmet",
+            "class": "driver",
+            "confidence": 0.78,
+            "score": 5,
+            "severity": "\ud83d\udfe1 MEDIUM",
+            "time": "2026-06-18 10:30:14"
+        },
+        {
+            "type": "helmet",
+            "class": "driver",
+            "confidence": 0.76,
+            "score": 5,
+            "severity": "\ud83d\udfe1 MEDIUM",
+            "time": "2026-06-18 10:30:14"
+        },
+        {
+            "type": "helmet",
+            "class": "helmet",
+            "confidence": 0.73,
+            "score": 0,
+            "severity": "\ud83d\udfe2 LOW",
+            "time": "2026-06-18 10:30:14"
+        },
+        {
+            "type": "helmet",
+            "class": "helmet",
+            "confidence": 0.64,
+            "score": 0,
+            "severity": "\ud83d\udfe2 LOW",
+            "time": "2026-06-18 10:30:14"
+        },
+        {
+            "type": "helmet",
+            "class": "driver",
+            "confidence": 0.56,
+            "score": 5,
+            "severity": "\ud83d\udfe1 MEDIUM",
+            "time": "2026-06-18 10:30:14"
+        },
+        {
+            "type": "helmet",
+            "class": "no-helmet",
+            "confidence": 0.5,
+            "score": 8,
+            "severity": "\ud83d\udfe0 HIGH",
+            "time": "2026-06-18 10:30:14"
+        },
+        {
+            "type": "redlight",
+            "class": "motorcycle",
+            "confidence": 0.53,
+            "score": 5,
+            "severity": "\ud83d\udfe1 MEDIUM",
+            "time": "2026-06-18 10:30:15"
+        },
+        {
+            "type": "redlight",
+            "class": "red_light",
+            "confidence": 0.5,
+            "score": 9,
+            "severity": "\ud83d\udd34 CRITICAL",
+            "time": "2026-06-18 10:30:15"
+        },
+        {
+            "type": "vehicle",
+            "class": "motorcycle",
+            "confidence": 0.84,
+            "score": 3,
+            "severity": "\ud83d\udfe2 LOW",
+            "time": "2026-06-18 10:30:16"
+        }
+    ],
+    "license_plates": [
+        "88"
+    ],
+    "alert_sent": true,
+    "statistics": {
+        "total_reports": 7,
+        "total_violations": 83,
+        "violation_counts": {
+            "helmet": 45,
+            "stopline": 1,
+            "redlight": 13,
+            "vehicle": 18,
+            "wrong_way": 6
+        },
+        "severity_counts": {
+            "CRITICAL": 4,
+            "HIGH": 0,
+            "MEDIUM": 24,
+            "LOW": 55
+        }
+    },
+    "preprocessed": true
+}

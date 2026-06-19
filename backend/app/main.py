@@ -1,0 +1,101 @@
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from contextlib import asynccontextmanager
+import os
+
+from .config import settings
+from .database import Database
+from .routes import incidents, alerts, dashboard, cameras, vehicles
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifespan context manager for startup and shutdown"""
+    # Startup
+    print("🚀 Starting GuardianEye Backend...")
+    await Database.connect_db()
+    
+    # Create evidence directory if it doesn't exist
+    os.makedirs(settings.evidence_dir, exist_ok=True)
+    print(f"📁 Evidence directory: {settings.evidence_dir}")
+    
+    yield
+    
+    # Shutdown
+    print("🛑 Shutting down GuardianEye Backend...")
+    await Database.close_db()
+
+
+app = FastAPI(
+    title="GuardianEye API",
+    description="Automated Traffic Violation Detection System - Backend API",
+    version="1.0.0",
+    lifespan=lifespan,
+    docs_url="/docs",
+    redoc_url="/redoc"
+)
+
+# CORS Configuration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        settings.frontend_url,
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Static files for evidence (images/videos)
+if os.path.exists(settings.evidence_dir):
+    app.mount("/evidence", StaticFiles(directory=settings.evidence_dir), name="evidence")
+
+# Include routers
+app.include_router(incidents.router)
+app.include_router(alerts.router)
+app.include_router(dashboard.router)
+app.include_router(cameras.router)
+app.include_router(vehicles.router)
+
+
+@app.get("/")
+async def root():
+    """Root endpoint"""
+    return {
+        "name": "GuardianEye API",
+        "version": "1.0.0",
+        "description": "Automated Traffic Violation Detection System",
+        "status": "operational",
+        "docs": "/docs",
+        "endpoints": {
+            "incidents": "/api/incidents",
+            "alerts": "/api/alerts",
+            "dashboard": "/api/dashboard",
+            "cameras": "/api/cameras",
+            "vehicles": "/api/vehicles"
+        }
+    }
+
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    return {
+        "status": "healthy",
+        "database": "connected" if Database.client else "disconnected"
+    }
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(
+        "app.main:app",
+        host=settings.api_host,
+        port=settings.api_port,
+        reload=settings.debug
+    )

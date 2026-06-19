@@ -1,0 +1,80 @@
+[
+    {
+        "type": "helmet",
+        "class": "driver",
+        "confidence": 0.9067636132240295,
+        "time": "2026-06-18 05:54:51"
+    },
+    {
+        "type": "helmet",
+        "class": "driver",
+        "confidence": 0.9030369520187378,
+        "time": "2026-06-18 05:54:51"
+    },
+    {
+        "type": "helmet",
+        "class": "driver",
+        "confidence": 0.7889295816421509,
+        "time": "2026-06-18 05:54:51"
+    },
+    {
+        "type": "helmet",
+        "class": "driver",
+        "confidence": 0.705954909324646,
+        "time": "2026-06-18 05:54:51"
+    },
+    {
+        "type": "helmet",
+        "class": "helmet",
+        "confidence": 0.6891279220581055,
+        "time": "2026-06-18 05:54:51"
+    },
+    {
+        "type": "helmet",
+        "class": "driver",
+        "confidence": 0.5736933350563049,
+        "time": "2026-06-18 05:54:51"
+    },
+    {
+        "type": "helmet",
+        "class": "helmet",
+        "confidence": 0.5438708066940308,
+        "time": "2026-06-18 05:54:51"
+    },
+    {
+        "type": "redlight",
+        "class": "red_light",
+        "confidence": 0.8253907561302185,
+        "time": "2026-06-18 05:54:53"
+    },
+    {
+        "type": "redlight",
+        "class": "motorcycle",
+        "confidence": 0.6435375213623047,
+        "time": "2026-06-18 05:54:53"
+    },
+    {
+        "type": "vehicle",
+        "class": "motorcycle",
+        "confidence": 0.9261942505836487,
+        "time": "2026-06-18 05:54:53"
+    },
+    {
+        "type": "vehicle",
+        "class": "motorcycle",
+        "confidence": 0.5642023682594299,
+        "time": "2026-06-18 05:54:53"
+    },
+    {
+        "type": "vehicle",
+        "class": "motorcycle",
+        "confidence": 0.5295342206954956,
+        "time": "2026-06-18 05:54:53"
+    },
+    {
+        "type": "wrong_way",
+        "class": "right-side",
+        "confidence": 0.6178563237190247,
+        "time": "2026-06-18 05:54:54"
+    }
+]
