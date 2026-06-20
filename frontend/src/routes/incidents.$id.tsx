@@ -1,9 +1,10 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState } from "react";
-import { incidents, timeAgo, type IncidentStatus } from "@/lib/mock-data";
+import { timeAgo, type IncidentStatus } from "@/lib/mock-data";
+import { useIncident, useUpdateIncidentStatus, useSendPoliceAlert, useSendHospitalAlert } from "@/lib/api-hooks";
+import { api } from "@/lib/api-client";
 import { Btn, Eyebrow, Panel, PlateChip, SectionTitle, SeverityBadge, StatusPill } from "@/components/ui-bits";
-import { ArrowLeft, Download, Send, Ambulance, CheckCircle2 } from "lucide-react";
-import { toast } from "sonner";
+import { ArrowLeft, Download, Send, Ambulance, CheckCircle2, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/incidents/$id")({
   head: ({ params }) => ({ meta: [{ title: `${params.id} · GuardianEye` }] }),
@@ -15,11 +16,6 @@ export const Route = createFileRoute("/incidents/$id")({
       <Link to="/violations" className="inline-block mt-4 text-rust underline">Back to violations</Link>
     </div>
   ),
-  loader: ({ params }) => {
-    const inc = incidents.find(i => i.id === params.id);
-    if (!inc) throw notFound();
-    return inc;
-  },
 });
 
 const DETECTED_OBJECTS = [
@@ -31,9 +27,28 @@ const DETECTED_OBJECTS = [
 ];
 
 function IncidentDetail() {
-  const inc = Route.useLoaderData();
-  const [status, setStatus] = useState<IncidentStatus>(inc.status);
+  const { id } = Route.useParams();
+  const { data: incidentData, isLoading } = useIncident(id);
+  const updateStatusMutation = useUpdateIncidentStatus();
+  const sendPoliceMutation = useSendPoliceAlert();
+  const sendHospitalMutation = useSendHospitalAlert();
   const [note, setNote] = useState("");
+
+  if (isLoading) {
+    return (
+      <div className="p-8 flex items-center justify-center min-h-[60vh]">
+        <div className="text-center space-y-3">
+          <Loader2 className="size-8 animate-spin text-rust mx-auto" />
+          <p className="text-muted-foreground">Loading incident details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const inc = incidentData?.incident;
+  if (!inc) {
+    throw notFound();
+  }
 
   return (
     <div className="p-5 lg:p-8 space-y-6">
@@ -43,11 +58,11 @@ function IncidentDetail() {
 
       <header className="flex items-end justify-between gap-4 border-b border-border pb-5">
         <div>
-          <Eyebrow>{inc.id} · {inc.cameraId}</Eyebrow>
-          <h1 className="font-display text-[42px] leading-tight mt-1">{inc.type}</h1>
+          <Eyebrow>{inc.incident_id} · {inc.camera_id}</Eyebrow>
+          <h1 className="font-display text-[42px] leading-tight mt-1">{inc.violation_type}</h1>
           <div className="mt-2 flex items-center gap-3 text-[13px] text-graphite">
             <SeverityBadge severity={inc.severity} />
-            <StatusPill status={status} />
+            <StatusPill status={inc.status} />
             <span>{inc.location}</span>
             <span>·</span>
             <span>{new Date(inc.timestamp).toLocaleString("en-IN")}</span>

@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { repeatOffenders, timeAgo } from "@/lib/mock-data";
+import { timeAgo } from "@/lib/mock-data";
+import { useRepeatOffenders, useVehicleHistory } from "@/lib/api-hooks";
 import { Eyebrow, Panel, PlateChip, SectionTitle, SeverityBadge } from "@/components/ui-bits";
-import { Search, Car } from "lucide-react";
+import { Search, Car, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/vehicles")({
   head: () => ({ meta: [{ title: "Vehicle Lookup · GuardianEye" }] }),
@@ -10,8 +11,24 @@ export const Route = createFileRoute("/vehicles")({
 });
 
 function VehiclesPage() {
-  const [q, setQ] = useState("KA 03 HX 4412");
-  const v = repeatOffenders.find(o => o.plate.toLowerCase().includes(q.toLowerCase())) ?? repeatOffenders[0];
+  const [q, setQ] = useState("");
+
+  const { data: offendersData, isLoading: offendersLoading } = useRepeatOffenders(3, 50);
+  const { data: historyData, isLoading: historyLoading } = useVehicleHistory(q);
+
+  const repeatOffenders = offendersData?.offenders || [];
+  const v = q && historyData?.vehicle ? historyData.vehicle : (repeatOffenders[0] || null);
+
+  if (offendersLoading) {
+    return (
+      <div className="p-8 flex items-center justify-center min-h-[60vh]">
+        <div className="text-center space-y-3">
+          <Loader2 className="size-8 animate-spin text-rust mx-auto" />
+          <p className="text-muted-foreground">Loading vehicle data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-5 lg:p-8 space-y-6">

@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { cameras, type Camera } from "@/lib/mock-data";
+import { useHeatmapData, useCameras } from "@/lib/api-hooks";
 import { CityMap, HotspotsList } from "@/components/CityMap";
 import { Eyebrow, Panel, SectionTitle } from "@/components/ui-bits";
+import { Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/heatmap")({
   head: () => ({ meta: [{ title: "Risk Map · GuardianEye" }] }),
@@ -10,9 +11,25 @@ export const Route = createFileRoute("/heatmap")({
 });
 
 function HeatmapPage() {
-  const [selected, setSelected] = useState<Camera | null>(null);
+  const [selected, setSelected] = useState<any | null>(null);
   const [type, setType] = useState("all");
   const [range, setRange] = useState("24h");
+
+  const { data: heatmapData, isLoading: heatmapLoading } = useHeatmapData();
+  const { data: camerasData, isLoading: camerasLoading } = useCameras();
+
+  const cameras = camerasData?.cameras || [];
+
+  if (heatmapLoading || camerasLoading) {
+    return (
+      <div className="p-8 flex items-center justify-center min-h-[60vh]">
+        <div className="text-center space-y-3">
+          <Loader2 className="size-8 animate-spin text-rust mx-auto" />
+          <p className="text-muted-foreground">Loading heatmap...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-5 lg:p-8 space-y-6">

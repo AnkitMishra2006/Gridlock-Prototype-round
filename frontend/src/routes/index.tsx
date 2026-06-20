@@ -2,10 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   Area, AreaChart, Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid,
 } from "recharts";
-import { ArrowUpRight, Activity, Video, AlertTriangle, Map as MapIcon } from "lucide-react";
-import {
-  incidents, alerts, trendData, topViolations, cameras, timeAgo,
-} from "@/lib/mock-data";
+import { ArrowUpRight, Activity, Video, AlertTriangle, Map as MapIcon, Loader2 } from "lucide-react";
+import { timeAgo } from "@/lib/mock-data";
+import { useDashboardStats, useRecentIncidents, useAlerts, useViolationTrend, useTopViolations, useCameras } from "@/lib/api-hooks";
 import { Btn, Eyebrow, Metric, Panel, PlateChip, SectionTitle, SeverityBadge, StatusPill } from "@/components/ui-bits";
 
 export const Route = createFileRoute("/")({
@@ -19,9 +18,32 @@ export const Route = createFileRoute("/")({
 });
 
 function Overview() {
-  const activeCams = cameras.filter(c => c.status === "active").length;
-  const recent = incidents.slice(0, 7);
-  const liveAlerts = alerts.slice(0, 3);
+  const { data: stats, isLoading: statsLoading } = useDashboardStats();
+  const { data: recentData, isLoading: recentLoading } = useRecentIncidents(24, 7);
+  const { data: alertsData, isLoading: alertsLoading } = useAlerts({ limit: 3 });
+  const { data: trendDataRaw, isLoading: trendLoading } = useViolationTrend(24);
+  const { data: topViolationsData, isLoading: topLoading } = useTopViolations(5);
+  const { data: camerasData, isLoading: camerasLoading } = useCameras();
+
+  // Show loading state
+  if (statsLoading || recentLoading || alertsLoading) {
+    return (
+      <div className="p-8 flex items-center justify-center min-h-[60vh]">
+        <div className="text-center space-y-3">
+          <Loader2 className="size-8 animate-spin text-rust mx-auto" />
+          <p className="text-muted-foreground">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Extract data with fallbacks
+  const recent = recentData?.incidents || [];
+  const liveAlerts = alertsData?.alerts || [];
+  const trendData = trendDataRaw?.trend || [];
+  const topViolations = topViolationsData?.violations || [];
+  const cameras = camerasData?.cameras || [];
+  const activeCams = cameras.filter((c: any) => c.status === "active").length;
 
   return (
     <div className="p-5 lg:p-8 space-y-8">
@@ -46,14 +68,14 @@ function Overview() {
 
       {/* Metric grid */}
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <Metric label="Violations Today" value="1,284" delta="+12.4% vs yesterday" deltaTone="up" footnote="last sync 00:00:42" />
-        <Metric label="Active Accidents" value="3" delta="2 critical" deltaTone="up" footnote="dispatch in progress" />
-        <Metric label="High Severity Alerts" value="47" delta="9 in last hour" deltaTone="up" />
-        <Metric label="Pending Police Response" value="18" delta="-3" deltaTone="down" footnote="SLA 6m 12s" />
-        <Metric label="Pending Hospital Response" value="2" delta="0 critical pending" deltaTone="neutral" />
-        <Metric label="Active Cameras" value={`${activeCams} / ${cameras.length}`} delta="1 offline · 1 warning" deltaTone="up" />
-        <Metric label="Avg Response Time" value="4m 38s" delta="-22s" deltaTone="down" footnote="target ≤ 5m" />
-        <Metric label="City Safety Score" value="78" delta="+1.2 this week" deltaTone="down" footnote="moderate risk" />
+        <Metric label="Violations Today" value={stats?.total_incidents_today?.toString() || "0"} delta={stats?.incidents_change_pct ? `${stats.incidents_change_pct > 0 ? '+' : ''}${stats.incidents_change_pct.toFixed(1)}% vs yesterday` : ""} deltaTone={stats?.incidents_change_pct > 0 ? "up" : "down"} footnote="last sync 00:00:42" />
+        <Metric label="Active Accidents" value={stats?.active_accidents?.toString() || "0"} delta={stats?.critical_accidents ? `${stats.critical_accidents} critical` : ""} deltaTone="up" footnote="dispatch in progress" />
+        <Metric label="High Severity Alerts" value={stats?.high_severity_alerts?.toString() || "0"} delta={stats?.alerts_last_hour ? `${stats.alerts_last_hour} in last hour` : ""} deltaTone="up" />
+        <Metric label="Pending Police Response" value={stats?.pending_police_alerts?.toString() || "0"} delta={stats?.police_alerts_change ? `${stats.police_alerts_change}` : ""} deltaTone={stats?.police_alerts_change < 0 ? "down" : "up"} footnote="SLA 6m 12s" />
+        <Metric label="Pending Hospital Response" value={stats?.pending_hospital_alerts?.toString() || "0"} delta={stats?.critical_pending === 0 ? "0 critical pending" : `${stats?.critical_pending} critical`} deltaTone="neutral" />
+        <Metric label="Active Cameras" value={`${activeCams} / ${cameras.length}`} delta={stats?.offline_cameras ? `${stats.offline_cameras} offline` : "all online"} deltaTone="up" />
+        <Metric label="Avg Response Time" value={stats?.avg_response_time || "N/A"} delta={stats?.response_time_change || ""} deltaTone={stats?.response_time_change?.includes('-') ? "down" : "up"} footnote="target ≤ 5m" />
+        <Metric label="City Safety Score" value={stats?.safety_score?.toString() || "78"} delta={stats?.safety_score_change ? `${stats.safety_score_change > 0 ? '+' : ''}${stats.safety_score_change} this week` : ""} deltaTone="down" footnote="moderate risk" />
       </section>
 
       {/* Chart + top violations */}
@@ -135,14 +157,14 @@ function Overview() {
                 </tr>
               </thead>
               <tbody>
-                {recent.map(inc => (
-                  <tr key={inc.id} className="border-b border-border last:border-0 hover:bg-muted/40">
-                    <td className="py-3 px-5 font-mono text-[11.5px] text-muted-foreground">{inc.id}</td>
+                {recent.map((inc: any) => (
+                  <tr key={inc.incident_id} className="border-b border-border last:border-0 hover:bg-muted/40">
+                    <td className="py-3 px-5 font-mono text-[11.5px] text-muted-foreground">{inc.incident_id}</td>
                     <td className="py-3">
-                      <Link to="/incidents/$id" params={{ id: inc.id }} className="hover:text-rust">{inc.type}</Link>
+                      <Link to="/incidents/$id" params={{ id: inc.incident_id }} className="hover:text-rust">{inc.violation_type}</Link>
                     </td>
-                    <td className="py-3"><PlateChip plate={inc.plate} /></td>
-                    <td className="py-3 text-graphite">{inc.location}</td>
+                    <td className="py-3"><PlateChip plate={inc.license_plates?.[0] || 'UNKNOWN'} /></td>
+                    <td className="py-3 text-graphite">{inc.location?.name || inc.location}</td>
                     <td className="py-3"><SeverityBadge severity={inc.severity} /></td>
                     <td className="py-3"><StatusPill status={inc.status} /></td>
                     <td className="py-3 px-5 text-right font-mono text-[11.5px] text-muted-foreground">{timeAgo(inc.timestamp)}</td>
@@ -180,14 +202,14 @@ function Overview() {
               <Activity className="size-3.5 text-rust" />
             </div>
             <div>
-              {liveAlerts.map(a => (
-                <Link key={a.id} to="/alerts" className="block px-5 py-3 border-t border-border hover:bg-muted/40">
+              {liveAlerts.map((a: any) => (
+                <Link key={a.alert_id} to="/alerts" className="block px-5 py-3 border-t border-border hover:bg-muted/40">
                   <div className="flex items-center gap-2">
                     <SeverityBadge severity={a.severity} />
                     <span className="font-mono text-[10.5px] text-muted-foreground ml-auto">{timeAgo(a.timestamp)}</span>
                   </div>
-                  <div className="mt-1.5 text-[13.5px] font-medium leading-snug">{a.title}</div>
-                  <div className="text-[12px] text-muted-foreground mt-0.5">{a.location} · {a.assignee}</div>
+                  <div className="mt-1.5 text-[13.5px] font-medium leading-snug">{a.message || a.title}</div>
+                  <div className="text-[12px] text-muted-foreground mt-0.5">{a.location?.name || a.location} · {a.assigned_to || 'Unassigned'}</div>
                 </Link>
               ))}
             </div>
