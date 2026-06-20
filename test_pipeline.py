@@ -1,10 +1,8 @@
 """
-Complete Pipeline Test
+Complete Pipeline Test (2-Service Architecture)
 
 Tests the entire flow:
-Camera Image → Backend Upload → Model Detection → Backend Storage → Frontend Display
-
-Run this after starting both backend and model servers.
+Camera Image → Unified Backend (Embedded YOLO) → MongoDB → Dashboard & API endpoints
 """
 
 import requests
@@ -13,33 +11,11 @@ from pathlib import Path
 
 # Configuration
 BACKEND_URL = "http://localhost:8000"
-MODEL_URL = "http://localhost:8001"
-TEST_IMAGE = "model/evidence/test_image.jpg"  # Use any sample image
-
-def test_model_health():
-    """Test 1: Check if model API is running"""
-    print("\n🔍 Test 1: Model API Health Check")
-    try:
-        response = requests.get(f"{MODEL_URL}/health", timeout=5)
-        if response.status_code == 200:
-            print("✅ Model API is healthy")
-            print(f"   Response: {response.json()}")
-            return True
-        else:
-            print(f"❌ Model API returned status {response.status_code}")
-            return False
-    except requests.exceptions.ConnectionError:
-        print("❌ Cannot connect to Model API")
-        print("   Make sure to start it with: cd model && python model_api.py")
-        return False
-    except Exception as e:
-        print(f"❌ Error: {e}")
-        return False
-
+TEST_IMAGE = "model/evidence/violation_20260618_053210.jpg"  # Real test image path
 
 def test_backend_health():
-    """Test 2: Check if backend API is running"""
-    print("\n🔍 Test 2: Backend API Health Check")
+    """Test 1: Check if backend API is running"""
+    print("\n🔍 Test 1: Backend API Health Check")
     try:
         response = requests.get(f"{BACKEND_URL}/health", timeout=5)
         if response.status_code == 200:
@@ -51,51 +27,36 @@ def test_backend_health():
             return False
     except requests.exceptions.ConnectionError:
         print("❌ Cannot connect to Backend API")
-        print("   Make sure to start it with: cd backend && uvicorn app.main:app --reload")
+        print("   Make sure to start it with: conda run -n venv python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload")
         return False
     except Exception as e:
         print(f"❌ Error: {e}")
         return False
 
 
-def test_model_detection():
-    """Test 3: Test model detection directly"""
-    print("\n🔍 Test 3: Direct Model Detection")
-    
-    # Check if test image exists
-    if not Path(TEST_IMAGE).exists():
-        print(f"⚠️  Test image not found: {TEST_IMAGE}")
-        print("   Using simulation instead...")
-        return True  # Skip this test
-    
+def test_model_health():
+    """Test 2: Check if integrated model is healthy"""
+    print("\n🔍 Test 2: Integrated Model Health Check")
     try:
-        with open(TEST_IMAGE, 'rb') as f:
-            files = {'file': f}
-            data = {'camera_id': 'TEST-CAM-001'}
-            response = requests.post(
-                f"{MODEL_URL}/detect",
-                files=files,
-                data=data,
-                timeout=30
-            )
-        
+        response = requests.get(f"{BACKEND_URL}/api/process/model-health", timeout=5)
         if response.status_code == 200:
-            result = response.json()
-            print("✅ Model detection successful")
-            print(f"   Violations detected: {len(result.get('violations', []))}")
-            print(f"   Inference time: {result.get('inference_time', 0):.3f}s")
+            print("✅ Embedded YOLO models are healthy")
+            print(f"   Response: {response.json()}")
             return True
         else:
-            print(f"❌ Model detection failed with status {response.status_code}")
+            print(f"❌ Model health check returned status {response.status_code}")
             return False
+    except requests.exceptions.ConnectionError:
+        print("❌ Cannot connect to Backend API for model health")
+        return False
     except Exception as e:
         print(f"❌ Error: {e}")
         return False
 
 
 def test_backend_upload():
-    """Test 4: Test backend upload endpoint"""
-    print("\n🔍 Test 4: Backend Upload & Processing")
+    """Test 3: Test backend upload & embedded YOLO processing"""
+    print("\n🔍 Test 3: Backend Upload & Integrated YOLO Inference")
     
     # Check if test image exists
     if not Path(TEST_IMAGE).exists():
@@ -108,7 +69,7 @@ def test_backend_upload():
             files = {'file': ('test.jpg', f, 'image/jpeg')}
             data = {
                 'camera_id': 'TEST-CAM-001',
-                'location': 'Test Location',
+                'location': 'Test Silk Board Junction',
                 'latitude': 12.9716,
                 'longitude': 77.5946
             }
@@ -126,19 +87,21 @@ def test_backend_upload():
             print(f"   Message: {result.get('message')}")
             if result.get('incident_id'):
                 print(f"   Incident ID: {result.get('incident_id')}")
+                print(f"   Primary Violation: {result.get('primary_violation')}")
+                print(f"   Severity: {result.get('severity')}")
             return True
         else:
             print(f"⚠️  Backend upload returned status {response.status_code}")
             print(f"   Response: {response.text}")
             return False
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"❌ Error during upload test: {e}")
         return False
 
 
 def test_simulation():
-    """Test 5: Test simulation endpoint (no image needed)"""
-    print("\n🔍 Test 5: Simulation (No Model Required)")
+    """Test 4: Test simulation endpoint (no image needed)"""
+    print("\n🔍 Test 4: Simulated Detection (No Model Inference)")
     
     try:
         data = {
@@ -166,21 +129,23 @@ def test_simulation():
 
 
 def test_get_incidents():
-    """Test 6: Check if incidents are retrievable"""
-    print("\n🔍 Test 6: Retrieve Incidents from Backend")
+    """Test 5: Check if incidents are retrievable and wrapped in the correct shape"""
+    print("\n🔍 Test 5: Retrieve Incidents envelope from Backend")
     
     try:
         response = requests.get(f"{BACKEND_URL}/api/incidents?limit=5", timeout=10)
         
         if response.status_code == 200:
-            incidents = response.json()
-            print(f"✅ Retrieved {len(incidents)} incidents")
+            res_json = response.json()
+            incidents = res_json.get("incidents", [])
+            print(f"✅ Successfully retrieved wrapped incidents envelope. Count: {len(incidents)}")
             if incidents:
-                print(f"   Latest incident: {incidents[0].get('incident_id')}")
+                print(f"   Latest incident ID: {incidents[0].get('incident_id')}")
                 print(f"   Type: {incidents[0].get('violation_type')}")
+                print(f"   Evidence Image: {incidents[0].get('evidence_image')}")
             return True
         else:
-            print(f"❌ Failed to retrieve incidents")
+            print(f"❌ Failed to retrieve incidents. Status: {response.status_code}")
             return False
     except Exception as e:
         print(f"❌ Error: {e}")
@@ -190,7 +155,7 @@ def test_get_incidents():
 def main():
     """Run all tests"""
     print("=" * 60)
-    print("🎯 GuardianEye Complete Pipeline Test")
+    print("🎯 GuardianEye Complete Integrated Pipeline Test")
     print("=" * 60)
     
     results = []
@@ -198,15 +163,14 @@ def main():
     # Test backend
     results.append(("Backend Health", test_backend_health()))
     
-    # Test model
-    results.append(("Model Health", test_model_health()))
+    # Test model health
+    results.append(("Model Health Check", test_model_health()))
     
-    # If both are healthy, test integration
+    # If both are healthy, test upload
     if results[0][1] and results[1][1]:
-        results.append(("Model Detection", test_model_detection()))
-        results.append(("Backend Upload", test_backend_upload()))
+        results.append(("Integrated Upload & YOLO", test_backend_upload()))
     
-    # Test simulation (works without model)
+    # Test simulation
     if results[0][1]:
         results.append(("Simulation", test_simulation()))
         results.append(("Get Incidents", test_get_incidents()))
@@ -226,13 +190,9 @@ def main():
     print(f"\n🎯 Score: {passed}/{total} tests passed")
     
     if passed == total:
-        print("\n🎉 All tests passed! System is fully operational!")
-    elif passed >= total * 0.6:
-        print("\n⚠️  Most tests passed. Check failed tests above.")
+        print("\n🎉 All tests passed! System is fully operational in 2-service mode!")
     else:
-        print("\n❌ Many tests failed. Make sure both servers are running:")
-        print("   1. Backend: cd backend && uvicorn app.main:app --reload")
-        print("   2. Model: cd model && python model_api.py")
+        print("\n❌ Some tests failed. Please review errors above.")
 
 
 if __name__ == "__main__":

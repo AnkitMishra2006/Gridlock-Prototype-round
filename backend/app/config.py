@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     # File Upload
     max_file_size: int = 10485760  # 10MB
     evidence_dir: str = "./evidence"
+    models_dir: str = "./models"
     base_dir: str = "."
     
     # AI Model Service

@@ -134,7 +134,10 @@ async def get_incident(
     if not incident:
         raise HTTPException(status_code=404, detail="Incident not found")
     
-    return incident
+    # Wrap in envelope for frontend hook, but merge fields for backward compatibility
+    response = {"incident": incident}
+    response.update(incident)
+    return response
 
 
 @router.patch("/{incident_id}/status", response_model=dict)

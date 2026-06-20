@@ -114,7 +114,7 @@ async def get_pending_alerts(
     """Get count of pending alerts"""
     alert_service = AlertService(db)
     count = await alert_service.get_pending_alerts()
-    return {"pending_alerts": count}
+    return {"pending_alerts": count, "pending": count}
 
 
 # ── Parameterized routes LAST ─────────────────────────────────────────────────

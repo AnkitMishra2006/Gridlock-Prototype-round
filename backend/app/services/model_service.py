@@ -5,26 +5,23 @@ This service handles communication with the AI model service
 (running on Colab, Hugging Face, or local server)
 """
 
-import httpx
+import asyncio
 from typing import Dict, Any, Optional, List
 from pathlib import Path
 from datetime import datetime
 from ..config import settings
+from .yolo_service import get_yolo_service, YOLO_AVAILABLE
 
 
 class ModelService:
-    """Service for communicating with AI model"""
+    """Service for communicating with AI model (embedded in-process)"""
     
     def __init__(self, model_url: Optional[str] = None):
         """
         Initialize model service
-        
-        Args:
-            model_url: URL of the model API endpoint
-                      If None, uses MODEL_API_URL from settings
         """
-        self.model_url = model_url or settings.model_api_url
-        self.timeout = 30.0  # 30 second timeout for model inference
+        self.model_url = "embedded"
+        self.timeout = 30.0
     
     async def detect_violations(
         self, 
@@ -33,7 +30,7 @@ class ModelService:
         timestamp: Optional[str] = None
     ) -> Dict[str, Any]:
         """
-        Send image to model for violation detection
+        Run violation detection in-process using YoloService
         
         Args:
             image_path: Path to the image file
@@ -44,30 +41,14 @@ class ModelService:
             Detection results in the format expected by backend
         """
         try:
-            # Send to model API using multipart/form-data
-            async with httpx.AsyncClient(timeout=self.timeout) as client:
-                with open(image_path, 'rb') as f:
-                    files = {'file': ('image.jpg', f, 'image/jpeg')}
-                    data = {
-                        'camera_id': camera_id,
-                        'timestamp': timestamp or datetime.utcnow().isoformat(),
-                        'return_evidence': 'true'
-                    }
-                    response = await client.post(
-                        f"{self.model_url}/detect",
-                        files=files,
-                        data=data
-                    )
-                    response.raise_for_status()
-                
-            return response.json()
-            
-        except httpx.TimeoutException:
-            raise Exception("Model inference timeout - model may be processing")
-        except httpx.HTTPError as e:
-            raise Exception(f"Model API error: {str(e)}")
+            yolo = get_yolo_service()
+            # Run CPU-bound YOLO inference in a background thread to prevent blocking FastAPI's event loop
+            result = await asyncio.to_thread(yolo.detect_from_file, image_path, camera_id)
+            if timestamp:
+                result["timestamp"] = timestamp
+            return result
         except Exception as e:
-            raise Exception(f"Error communicating with model: {str(e)}")
+            raise Exception(f"Error executing embedded model: {str(e)}")
     
     async def detect_violations_batch(
         self,
@@ -107,20 +88,17 @@ class ModelService:
         Returns:
             Health status of model service
         """
-        try:
-            async with httpx.AsyncClient(timeout=5.0) as client:
-                response = await client.get(f"{self.model_url}/health")
-                response.raise_for_status()
-                return {
-                    "status": "healthy",
-                    "model_url": self.model_url,
-                    "response": response.json()
-                }
-        except Exception as e:
+        if YOLO_AVAILABLE:
+            return {
+                "status": "healthy",
+                "model_url": "embedded",
+                "response": {"status": "ok", "message": "Embedded YOLO models active"}
+            }
+        else:
             return {
                 "status": "unhealthy",
-                "model_url": self.model_url,
-                "error": str(e)
+                "model_url": "embedded",
+                "error": "YOLO (ultralytics) dependency is not installed"
             }
     
     def process_model_output(self, model_output: Dict[str, Any]) -> Dict[str, Any]:

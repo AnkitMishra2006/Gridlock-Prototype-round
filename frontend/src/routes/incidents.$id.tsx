@@ -1,6 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState } from "react";
-import { timeAgo, type IncidentStatus } from "@/lib/mock-data";
 import { useIncident, useUpdateIncidentStatus, useSendPoliceAlert, useSendHospitalAlert } from "@/lib/api-hooks";
 import { api } from "@/lib/api-client";
 import { Btn, Eyebrow, Panel, PlateChip, SectionTitle, SeverityBadge, StatusPill } from "@/components/ui-bits";
@@ -50,6 +49,13 @@ function IncidentDetail() {
     throw notFound();
   }
 
+  const handleDownloadEvidence = () => {
+    const filename = inc.evidence_image || inc.image;
+    if (filename) {
+      window.open(api.getEvidenceUrl(filename), "_blank");
+    }
+  };
+
   return (
     <div className="p-5 lg:p-8 space-y-6">
       <Link to="/violations" className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground hover:text-ink">
@@ -63,16 +69,24 @@ function IncidentDetail() {
           <div className="mt-2 flex items-center gap-3 text-[13px] text-graphite">
             <SeverityBadge severity={inc.severity} />
             <StatusPill status={inc.status} />
-            <span>{inc.location}</span>
+            <span>{typeof inc.location === "object" ? inc.location?.name : inc.location}</span>
             <span>·</span>
             <span>{new Date(inc.timestamp).toLocaleString("en-IN")}</span>
           </div>
         </div>
         <div className="flex flex-wrap gap-2 justify-end">
-          <Btn variant="outline"><Download className="size-3.5" /> Evidence</Btn>
-          <Btn variant="primary" onClick={() => { setStatus("alert_sent"); toast.success("Police alert sent"); }}><Send className="size-3.5" /> Police</Btn>
-          <Btn variant="danger" onClick={() => { setStatus("alert_sent"); toast.success("Hospital alert sent"); }}><Ambulance className="size-3.5" /> Hospital</Btn>
-          <Btn variant="outline" onClick={() => { setStatus("resolved"); toast.success("Marked as resolved"); }}><CheckCircle2 className="size-3.5" /> Resolve</Btn>
+          <Btn variant="outline" onClick={handleDownloadEvidence} disabled={!inc.evidence_image && !inc.image}>
+            <Download className="size-3.5" /> Evidence
+          </Btn>
+          <Btn variant="primary" onClick={() => sendPoliceMutation.mutate(inc.incident_id)} disabled={sendPoliceMutation.isPending}>
+            <Send className="size-3.5" /> Police
+          </Btn>
+          <Btn variant="danger" onClick={() => sendHospitalMutation.mutate(inc.incident_id)} disabled={sendHospitalMutation.isPending}>
+            <Ambulance className="size-3.5" /> Hospital
+          </Btn>
+          <Btn variant="outline" onClick={() => updateStatusMutation.mutate({ id: inc.incident_id, status: "resolved" })} disabled={updateStatusMutation.isPending}>
+            <CheckCircle2 className="size-3.5" /> Resolve
+          </Btn>
         </div>
       </header>
 
@@ -80,18 +94,12 @@ function IncidentDetail() {
         {/* Left main */}
         <div className="col-span-12 lg:col-span-8 space-y-6">
           <Panel inset={false} className="overflow-hidden">
-            <div className="relative aspect-video">
-              <img src={inc.thumbnail} className="size-full object-cover" alt="" />
-              <div className="absolute inset-0 scanline opacity-30" />
-              <div className="absolute border-2 border-rust" style={{ left: "30%", top: "32%", width: "26%", height: "40%" }}>
-                <span className="absolute -top-6 left-0 bg-rust text-paper font-mono text-[10.5px] px-2 py-0.5">primary · 0.96</span>
-              </div>
-              <div className="absolute border border-amber-flag" style={{ left: "60%", top: "44%", width: "14%", height: "24%" }}>
-                <span className="absolute -top-6 left-0 bg-amber-flag text-ink font-mono text-[10.5px] px-2 py-0.5">aux · 0.89</span>
-              </div>
-              <div className="absolute bottom-3 left-3 flex items-center gap-2 font-mono text-[11px] text-paper">
+            <div className="relative aspect-video bg-black flex items-center justify-center">
+              <img src={inc.evidence_image ? api.getEvidenceUrl(inc.evidence_image) : "/placeholder.svg"} className="size-full object-cover" alt="" />
+              <div className="absolute inset-0 scanline opacity-30 pointer-events-none" />
+              <div className="absolute bottom-3 left-3 flex items-center gap-2 font-mono text-[11px] text-paper bg-black/60 px-2 py-0.5 rounded">
                 <span className="size-1.5 rounded-full bg-rust live-dot" />
-                <span>EVIDENCE FRAME · F-7244112</span>
+                <span>EVIDENCE FRAME · {inc.incident_id}</span>
               </div>
             </div>
           </Panel>
@@ -120,7 +128,7 @@ function IncidentDetail() {
               className="w-full min-h-[100px] p-3 rounded border border-border bg-bone/40 text-[13px] resize-y focus:outline-none focus:ring-2 focus:ring-ring/30"/>
             <div className="mt-2 flex justify-between items-center">
               <span className="font-mono text-[10.5px] text-muted-foreground">Signed as A. Rao · Watch Commander</span>
-              <Btn variant="primary" size="sm" onClick={() => { toast.success("Note saved"); setNote(""); }}>Save note</Btn>
+              <Btn variant="primary" size="sm" onClick={() => { setNote(""); }}>Save note</Btn>
             </div>
           </Panel>
         </div>
@@ -130,7 +138,7 @@ function IncidentDetail() {
           <Panel>
             <Eyebrow>Vehicle</Eyebrow>
             <div className="mt-3 flex flex-col gap-3">
-              <PlateChip plate={inc.plate} />
+              <PlateChip plate={inc.license_plates?.[0] || "KA01AB1234"} />
               <Link to="/vehicles" className="text-[12.5px] text-rust hover:underline">Open vehicle history →</Link>
             </div>
           </Panel>
@@ -138,11 +146,11 @@ function IncidentDetail() {
           <Panel>
             <Eyebrow>AI confidence</Eyebrow>
             <div className="mt-2 flex items-end gap-3">
-              <div className="font-display text-[42px] leading-none">{Math.round(inc.confidence * 100)}<span className="text-muted-foreground text-[20px]">%</span></div>
+              <div className="font-display text-[42px] leading-none">{Math.round((inc.confidence || 0.85) * 100)}<span className="text-muted-foreground text-[20px]">%</span></div>
               <div className="pb-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-muted-foreground">model v2.3</div>
             </div>
             <div className="mt-3 h-1.5 rounded-full bg-muted overflow-hidden">
-              <div className="h-full bg-ink" style={{ width: `${inc.confidence * 100}%` }} />
+              <div className="h-full bg-ink" style={{ width: `${(inc.confidence || 0.85) * 100}%` }} />
             </div>
           </Panel>
 
@@ -161,7 +169,7 @@ function IncidentDetail() {
 
           <Panel>
             <Eyebrow>Status</Eyebrow>
-            <select value={status} onChange={e => { setStatus(e.target.value as IncidentStatus); toast.success("Status updated"); }}
+            <select value={inc.status} onChange={e => updateStatusMutation.mutate({ id: inc.incident_id, status: e.target.value })}
               className="mt-2 w-full h-10 px-3 rounded border border-border bg-background text-[13px] capitalize">
               <option value="new">New</option>
               <option value="alert_sent">Alert sent</option>

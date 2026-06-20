@@ -38,12 +38,6 @@ else
     echo -e "${GREEN}✅ Port 8000 is available${NC}"
 fi
 
-if check_port 8001; then
-    echo -e "${YELLOW}⚠️  Port 8001 (Model) is already in use${NC}"
-else
-    echo -e "${GREEN}✅ Port 8001 is available${NC}"
-fi
-
 if check_port 5173; then
     echo -e "${YELLOW}⚠️  Port 5173 (Frontend) is already in use${NC}"
 else
@@ -52,19 +46,14 @@ fi
 echo ""
 
 echo "======================================"
-echo "📝 To start all services, open 3 terminals:"
+echo "📝 To start all services, open 2 terminals:"
 echo ""
-echo -e "${YELLOW}Terminal 1 - Backend:${NC}"
+echo -e "${YELLOW}Terminal 1 - Backend (Embedded AI):${NC}"
 echo "  cd backend"
 echo "  source venv/bin/activate"
 echo "  uvicorn app.main:app --reload"
 echo ""
-echo -e "${YELLOW}Terminal 2 - Model API:${NC}"
-echo "  cd model"
-echo "  python3 model_api.py"
-echo "  (or use Colab with ngrok and update MODEL_API_URL in backend/.env)"
-echo ""
-echo -e "${YELLOW}Terminal 3 - Frontend:${NC}"
+echo -e "${YELLOW}Terminal 2 - Frontend:${NC}"
 echo "  cd frontend"
 echo "  npm run dev"
 echo ""
@@ -72,7 +61,6 @@ echo "======================================"
 echo "🌐 Access URLs:"
 echo "  Frontend:  http://localhost:5173"
 echo "  Backend:   http://localhost:8000"
-echo "  Model API: http://localhost:8001"
 echo "  Docs:      http://localhost:8000/docs"
 echo ""
 echo "🧪 Test the pipeline:"

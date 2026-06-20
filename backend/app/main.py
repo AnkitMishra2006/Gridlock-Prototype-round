@@ -53,9 +53,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Static files for evidence (images/videos)
-if os.path.exists(settings.evidence_dir):
-    app.mount("/evidence", StaticFiles(directory=settings.evidence_dir), name="evidence")
+# Ensure evidence directory exists before mounting
+os.makedirs(settings.evidence_dir, exist_ok=True)
+app.mount("/evidence", StaticFiles(directory=settings.evidence_dir), name="evidence")
 
 # Include routers
 app.include_router(processing.router)  # Processing (upload & AI) - First for priority
