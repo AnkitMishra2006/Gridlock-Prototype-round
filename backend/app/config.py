@@ -25,6 +25,11 @@ class Settings(BaseSettings):
     # File Upload
     max_file_size: int = 10485760  # 10MB
     evidence_dir: str = "./evidence"
+    base_dir: str = "."
+    
+    # AI Model Service
+    model_api_url: str = "http://localhost:8001"  # URL where model API is running
+    model_timeout: int = 30  # Timeout in seconds for model inference
     
     class Config:
         env_file = ".env"

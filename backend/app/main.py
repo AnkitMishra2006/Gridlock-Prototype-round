@@ -6,7 +6,7 @@ import os
 
 from .config import settings
 from .database import Database
-from .routes import incidents, alerts, dashboard, cameras, vehicles
+from .routes import incidents, alerts, dashboard, cameras, vehicles, processing
 
 
 @asynccontextmanager
@@ -16,9 +16,11 @@ async def lifespan(app: FastAPI):
     print("🚀 Starting GuardianEye Backend...")
     await Database.connect_db()
     
-    # Create evidence directory if it doesn't exist
+    # Create necessary directories
     os.makedirs(settings.evidence_dir, exist_ok=True)
+    os.makedirs(os.path.join(settings.base_dir, "uploads"), exist_ok=True)
     print(f"📁 Evidence directory: {settings.evidence_dir}")
+    print(f"📁 Uploads directory: {os.path.join(settings.base_dir, 'uploads')}")
     
     yield
     
@@ -56,6 +58,7 @@ if os.path.exists(settings.evidence_dir):
     app.mount("/evidence", StaticFiles(directory=settings.evidence_dir), name="evidence")
 
 # Include routers
+app.include_router(processing.router)  # Processing (upload & AI) - First for priority
 app.include_router(incidents.router)
 app.include_router(alerts.router)
 app.include_router(dashboard.router)
@@ -73,6 +76,7 @@ async def root():
         "status": "operational",
         "docs": "/docs",
         "endpoints": {
+            "processing": "/api/process",  # NEW: Image upload & AI processing
             "incidents": "/api/incidents",
             "alerts": "/api/alerts",
             "dashboard": "/api/dashboard",
