@@ -12,8 +12,9 @@ class Settings(BaseSettings):
     
     # API
     api_host: str = "0.0.0.0"
-    api_port: int = 8000
-    debug: bool = True
+    api_port: int = int(os.environ.get("PORT", 8000))
+    debug: bool = False
+
     
     # CORS
     frontend_url: str = "http://localhost:3000"
